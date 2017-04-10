@@ -3,6 +3,7 @@ if exists('g:loaded_nuget') || &cp
 endif
 
 let g:loaded_nuget = 1
+let g:install_with_neomake = 1
 let s:action = ''
 
 function! s:InstallPackage(version)
@@ -22,7 +23,12 @@ function! s:InstallPackage(version)
     throw 'Unable to find .csproj file, a .csproj file is required to make use of the `dotnet test` command.'
   endif
 
-  execute "!dotnet add " . project_files[0] . " package " . s:package . " -v " a:version
+  if g:install_with_neomake 
+    let maker = {'exe': 'dotnet', 'name': 'dotnet', 'args': ['add', project_files[0], 'package', s:package, '-v', a:version]}
+    call neomake#Make(0, [maker])
+    return
+  endif
+  execute '!dotnet add " ' project_files[0] . ' package ' . s:package . ' -v ' a:version
 endfunction
 
 function! s:PackageSearch(query) abort
