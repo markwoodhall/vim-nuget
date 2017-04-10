@@ -3,6 +3,7 @@ if exists('g:loaded_nuget') || &cp
 endif
 
 let g:loaded_nuget = 1
+let s:action = ''
 
 function! s:InstallPackage(version)
   let filename = expand('%:t:r')
@@ -21,7 +22,7 @@ function! s:InstallPackage(version)
     throw 'Unable to find .csproj file, a .csproj file is required to make use of the `dotnet test` command.'
   endif
 
-  execute "!dotnet add " . project_files[0] . " package " . s:action . " -v " a:version
+  execute "!dotnet add " . project_files[0] . " package " . s:package . " -v " a:version
 endfunction
 
 function! s:PackageSearch(query) abort
@@ -45,6 +46,7 @@ endfunction
 function! s:PackageVersions(package) abort
   let result = webapi#http#get('https://api.nuget.org/v3-flatcontainer/'.a:package.'/index.json')
   let s:actions = reverse(eval(substitute(result.content, '\r\n', '', 'g')).versions)
+  let s:package = a:package
   call fzf#run({
   \ 'source': s:actions,
   \ 'down': '40%',
