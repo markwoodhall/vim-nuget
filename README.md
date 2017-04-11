@@ -32,6 +32,8 @@ Plug 'Shougo/deoplete.nvim'
 
 `:RemovePackage package` tab completion is available on the package name.
 
+![remove-package](http://i.imgur.com/Q5j83FU.gif)
+
 ## Completion
 
 You can also get package name and version completion in `.csproj` files.
