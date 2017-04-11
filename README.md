@@ -11,7 +11,14 @@ I use [vim-plug](https://github.com/junegunn/vim-plug)
 
 ## Requirements
 
-vim-nuget makes use of [vim-webapi](https://github.com/mattn/webapi-vim) and [fzf.vim](https://github.com/junegunn/fzf.vim).
+vim-nuget makes use of [vim-webapi](https://github.com/mattn/webapi-vim), [fzf.vim](https://github.com/junegunn/fzf.vim), and [deoplete](https://github.com/Shougo/deoplete.nvim).
+
+
+```viml
+Plug 'mattn/webapi-vim'
+Plug 'junegunn/fzf.vim'
+Plug 'Shougo/deoplete.nvim'
+```
 
 ## Commands
 
@@ -19,9 +26,11 @@ vim-nuget makes use of [vim-webapi](https://github.com/mattn/webapi-vim) and [fz
 
 ![search-packages](http://i.imgur.com/yGSHOj8.gif)
 
-`:InstallPackage package` tab completion is available on the package name
+`:InstallPackage package` tab completion is available on the package name.
 
 ![install-package](http://i.imgur.com/mDSiChI.gif)
+
+`:RemovePackage package` tab completion is available on the package name.
 
 ## Completion
 
