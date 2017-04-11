@@ -20,7 +20,13 @@ vim-nuget makes use of [vim-webapi](https://github.com/mattn/webapi-vim), [fzf.v
 Plug 'mattn/webapi-vim'
 Plug 'junegunn/fzf.vim'
 Plug 'Shougo/deoplete.nvim'
+```
 
+## Configuration
+
+If you have [neomake](https://github.com/neomake/neomake) installed and wish to use it for asynchronous package installations you can use the following setting:
+```viml
+let g:nuget_install_with_neomake = 1
 ```
 
 ## Commands
