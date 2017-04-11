@@ -7,7 +7,9 @@ To enable NuGet integration in vim.
 Install using your favourite plugin manager,
 I use [vim-plug](https://github.com/junegunn/vim-plug)
 
-`Plug 'markwoodhall/vim-nuget'`
+```viml
+Plug 'markwoodhall/vim-nuget'
+```
 
 ## Requirements
 
@@ -18,19 +20,26 @@ vim-nuget makes use of [vim-webapi](https://github.com/mattn/webapi-vim), [fzf.v
 Plug 'mattn/webapi-vim'
 Plug 'junegunn/fzf.vim'
 Plug 'Shougo/deoplete.nvim'
+
 ```
 
 ## Commands
 
-`:SearchPackages query`
+```viml
+:SearchPackages query
+```
 
 ![search-packages](http://i.imgur.com/yGSHOj8.gif)
 
-`:InstallPackage package` tab completion is available on the package name.
+```viml
+:InstallPackage package "tab completion is available on the package name.
+```
 
 ![install-package](http://i.imgur.com/mDSiChI.gif)
 
-`:RemovePackage package` tab completion is available on the package name.
+```viml
+:RemovePackage package "tab completion is available on the package name.
+```
 
 ![remove-package](http://i.imgur.com/Q5j83FU.gif)
 
