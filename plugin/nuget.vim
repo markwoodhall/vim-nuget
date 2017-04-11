@@ -3,10 +3,13 @@ if exists('g:loaded_nuget') || &cp
 endif
 
 let g:loaded_nuget = 1
-let g:install_with_neomake = 1
+
+if !exists('g:nuget_install_with_neomake')
+  let g:nuget_install_with_neomake = 0
+endif
 let s:action = ''
 
-function! s:InstallPackage(version)
+function! s:FindProject()
   let filename = expand('%:t:r')
   let filepath = expand('%:p:h')
   let project_files = split(glob(filepath . '/*.csproj'), '\n')
@@ -18,17 +21,30 @@ function! s:InstallPackage(version)
     let filepath = '/'.join(filepath_parts[0:-2], '/')
     let project_files = split(glob(filepath . '/*.csproj'), '\n')
   endwhile
- 
   if len(project_files) == 0
     throw 'Unable to find .csproj file, a .csproj file is required to make use of the `dotnet test` command.'
   endif
+  return project_files[0]
+endfunction
 
-  if g:install_with_neomake 
-    let maker = {'exe': 'dotnet', 'name': 'dotnet', 'args': ['add', project_files[0], 'package', s:package, '-v', a:version]}
+function! s:InstallPackage(version)
+  let project = s:FindProject()
+  if g:nuget_install_with_neomake 
+    let maker = {'exe': 'dotnet', 'name': 'dotnet', 'args': ['add', project, 'package', s:package, '-v', a:version]}
     call neomake#Make(0, [maker])
     return
   endif
-  execute '!dotnet add " ' project_files[0] . ' package ' . s:package . ' -v ' a:version
+  execute '!dotnet add ' project . ' package ' . s:package . ' -v ' a:version
+endfunction
+
+function! s:RemovePackage(package)
+  let project = s:FindProject()
+  if g:nuget_install_with_neomake 
+    let maker = {'exe': 'dotnet', 'name': 'dotnet', 'args': ['remove', project, 'package', a:package]}
+    call neomake#Make(0, [maker])
+    return
+  endif
+  execute '!dotnet remove ' project . ' package ' . a:package
 endfunction
 
 function! s:PackageSearch(query) abort
@@ -63,5 +79,6 @@ function! s:PackageVersions(package) abort
   endif
 endfunction
 
-autocmd FileType cs command! -nargs=1 -complete=customlist,s:CompletePackage -buffer InstallPackage :exe s:PackageVersions(<q-args>)
-autocmd FileType cs command! -nargs=1 -buffer SearchPackages :exe s:PackageSearch(<q-args>)
+autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer InstallPackage :exe s:PackageVersions(<q-args>)
+autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer RemovePackage :exe s:RemovePackage(<q-args>)
+autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -buffer SearchPackages :exe s:PackageSearch(<q-args>)
