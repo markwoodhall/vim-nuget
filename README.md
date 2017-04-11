@@ -23,5 +23,11 @@ vim-nuget makes use of [vim-webapi](https://github.com/mattn/webapi-vim) and [fz
 
 ![install-package](http://i.imgur.com/mDSiChI.gif)
 
+## Completion
+
+You can also get package name and version completion in `.csproj` files.
+
+![completion](http://i.imgur.com/Y6WlADL.gif)
+
 ## License
 Copyright © Mark Woodhall. Distributed under the same terms as Vim itself. See `:help license`
