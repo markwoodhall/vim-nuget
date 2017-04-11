@@ -14,11 +14,36 @@ class Source(Base):
         self.name = 'nuget'
         self.mark = '[nuget]'
         self.filetypes = ['xml', 'csproj']
-        self.input_pattern = '\w*'
 
     def gather_candidates(self, context):
 
-        r = request.Request('https://api-v2v3search-0.nuget.org/autocomplete?q=%s' % context['complete_str'])
+        complete_str = context['complete_str']
+        line = self.vim.call('getline', '.')
+        col = self.vim.call('col', '.')-1
+        to_cursor = line[:col]
+
+        if '<PackageReference Include=\"' not in to_cursor:
+            return []
+
+        if 'Version="' in to_cursor:
+            package = to_cursor.replace(' ', '')
+            package = package.replace('<PackageReferenceInclude="', '')
+            package = package.replace('"Version="%s' % complete_str, '')
+
+            r = request.Request('https://api.nuget.org/v3-flatcontainer/%s/index.json' % package)
+
+            with request.urlopen(r) as req:
+                response_json = req.read().decode('utf-8')
+                response = json.loads(response_json)
+
+                titles = [{'word': x,
+                           'menu': package + ' ' + x,
+                           'info': package + ' ' + x}
+                           for x in response.get('versions')]
+                return titles
+            return []
+
+        r = request.Request('https://api-v2v3search-0.nuget.org/autocomplete?q=%s&take=100&includeDelisted=false' % complete_str)
 
         with request.urlopen(r) as req:
             response_json = req.read().decode('utf-8')
