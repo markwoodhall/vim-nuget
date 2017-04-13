@@ -57,7 +57,7 @@ function! s:PackageSearch(query) abort
   call fzf#run({
   \ 'source': s:actions,
   \ 'down': '40%',
-  \ 'sink': function('s:PackageVersions')})
+  \ 'sink': function('s:PackageVersionsNoSink')})
 endfunction
 
 function! s:CompletePackage(A, L, P) abort
@@ -65,20 +65,83 @@ function! s:CompletePackage(A, L, P) abort
   return eval(result.content).data
 endfunction
 
-function! s:PackageVersions(package) abort
+function! s:PackageVersionsNoSink(package) abort
+    call s:PackageVersions(a:package, 's:PackageInfo')
+endfunction
+
+function! s:PackageVersions(package, sink) abort
   let result = webapi#http#get('https://api.nuget.org/v3-flatcontainer/'.a:package.'/index.json')
   let s:actions = reverse(eval(substitute(result.content, '\r\n', '', 'g')).versions)
   let s:package = a:package
   call fzf#run({
   \ 'source': s:actions,
   \ 'down': '40%',
-  \ 'sink': function('s:InstallPackage')})
+  \ 'sink': function(a:sink)})
   if s:action == 'search'
     call feedkeys("a")
     let s:action = ''
   endif
 endfunction
 
-autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer InstallPackage :exe s:PackageVersions(<q-args>)
+function! s:PackageInfoUnderCursor()
+    let line = getline('.')
+    let length = len(line)
+    let col = col('.')-1
+    let to_cursor = line[col:length]
+    let package = split(to_cursor, '-')[0]
+    let pversion = split(to_cursor, '-')[1]
+    let s:package = package
+    call s:PackageInfo(pversion)
+endfunction
+
+function! s:PackageInfo(version) abort
+  let s:version = a:version
+  let result = webapi#http#get('https://api.nuget.org/v3/registration0/'.tolower(s:package).'/'.a:version.'.json')
+  let catalogEntry = eval(substitute(substitute(result.content, 'true', '1', 'g'), 'false', '0', 'g')).catalogEntry
+
+  let result = webapi#http#get(catalogEntry)
+  let result = eval(substitute(substitute(substitute(result.content, '\r\n', '', 'g'), 'true', '1', 'g'), 'false', '0', 'g'))
+  let targetFrameworks = []
+  if has_key(result, 'dependencyGroups')
+    for d in result.dependencyGroups
+        let targetFrameworks = targetFrameworks + [d.targetFramework]
+        if has_key(d, 'dependencies')
+            for de in d.dependencies
+                let targetFrameworks = targetFrameworks + ['   > '. de.id.'-'. split(split(de.range, '[')[0], ',')[0]]
+            endfor
+        endif
+    endfor
+  endif
+  let status =  result.isPrerelease ? ' - Beta' : ''
+  let lines = ['#'.s:package.' - '.a:version. '' . status, '', result.description, '', '*Last Published at:'.result.published.'*', '', '##Target Frameworks:', '']
+  for tf in targetFrameworks
+      let lines = lines + [tf]
+  endfor
+  let lines = lines + ['', '##Url', '', has_key(result, 'projectUrl') ? result.projectUrl : 'Not available']
+  let lines = lines + ['', '##Authors', '', has_key(result, 'authors') ? result.authors : 'Not available']
+  let lines = lines + ['', '##License', '', has_key(result, 'licenseUrl') ? result.licenseUrl : 'Not available']
+  let lines = lines + ['', '##Tags', '']
+  if has_key(result, 'tags')
+    for t in result.tags
+        let lines = lines + ['   > '.t]
+    endfor
+  endif
+  let command = expand('%b') =~ '__Nuget_Package' ? 'e' : 'split'
+  execute command '__Nuget_Package-'.s:package.'-'.a:version
+    setlocal filetype=markdown
+    setlocal buftype=nofile
+  call append(0, lines)
+  normal! gg
+  nnoremap <buffer> <ESC> :q<CR>
+  nnoremap <buffer> F :PackageInfoUnderCursor<CR>
+  nnoremap <buffer> I :InstallThisPackage<CR>
+  setlocal nomodifiable
+endfunction
+
+autocmd filetype markdown command! -buffer PackageInfoUnderCursor :exe s:PackageInfoUnderCursor()
+autocmd filetype markdown command! -buffer InstallThisPackage :exe s:InstallPackage(s:version)
+
+autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer InstallPackage :exe s:PackageVersions(<q-args>, 's:InstallPackage')
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer RemovePackage :exe s:RemovePackage(<q-args>)
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -buffer SearchPackages :exe s:PackageSearch(<q-args>)
+autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer PackageInfo :exe s:PackageVersions(<q-args>, 's:PackageInfo')
