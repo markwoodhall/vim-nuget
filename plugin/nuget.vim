@@ -133,8 +133,8 @@ function! s:PackageInfo(version) abort
   call append(0, lines)
   normal! gg
   nnoremap <buffer> <ESC> :q<CR>
-  nnoremap <buffer> F :PackageInfoUnderCursor<CR>
-  nnoremap <buffer> I :InstallThisPackage<CR>
+  nnoremap <silent> <buffer> F :PackageInfoUnderCursor<CR>
+  nnoremap <silent> <buffer> I :InstallThisPackage<CR>
   setlocal nomodifiable
 endfunction
 
