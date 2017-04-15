@@ -83,6 +83,19 @@ function! s:PackageVersions(package, sink) abort
   endif
 endfunction
 
+function! s:PackageCache()
+  let s:actions = split(system('find ~/.nuget/packages/ -name *.dll'), '\n')
+  call fzf#run({
+  \ 'source': s:actions,
+  \ 'down': '40%',
+  \ 'sink': function('s:LoadAssembly')})
+endfunction
+
+function! s:LoadAssembly(assembly)
+    let lines = ['LoadAssembly("'.a:assembly.'");']
+    call append(1, lines)
+endfunction
+
 function! s:PackageInfoUnderCursor()
     let line = getline('.')
     let length = len(line)
@@ -144,4 +157,5 @@ autocmd filetype markdown command! -buffer InstallThisPackage :exe s:InstallPack
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer InstallPackage :exe s:PackageVersions(<q-args>, 's:InstallPackage')
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer RemovePackage :exe s:RemovePackage(<q-args>)
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -buffer SearchPackages :exe s:PackageSearch(<q-args>)
+autocmd BufNewFile,BufRead *.cs,*.csproj command! -buffer PackageCache :exe s:PackageCache()
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer PackageInfo :exe s:PackageVersions(<q-args>, 's:PackageInfo')
