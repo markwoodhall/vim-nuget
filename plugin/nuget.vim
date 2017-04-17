@@ -148,7 +148,6 @@ function! s:PackageInfo(version) abort
   nnoremap <buffer> <ESC> :q<CR>
   nnoremap <silent> <buffer> F :PackageInfoUnderCursor<CR>
   nnoremap <silent> <buffer> I :InstallThisPackage<CR>
-  setlocal nomodifiable
 endfunction
 
 autocmd filetype markdown command! -buffer PackageInfoUnderCursor :exe s:PackageInfoUnderCursor()
@@ -159,3 +158,9 @@ autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -buffer SearchPackages :exe s:PackageSearch(<q-args>)
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -buffer PackageCache :exe s:PackageCache()
 autocmd BufNewFile,BufRead *.cs,*.csproj command! -nargs=1 -complete=customlist,s:CompletePackage -buffer PackageInfo :exe s:PackageVersions(<q-args>, 's:PackageInfo')
+
+autocmd filetype cs command! -nargs=1 -complete=customlist,s:CompletePackage -buffer InstallPackage :exe s:PackageVersions(<q-args>, 's:InstallPackage')
+autocmd filetype cs command! -nargs=1 -complete=customlist,s:CompletePackage -buffer RemovePackage :exe s:RemovePackage(<q-args>)
+autocmd filetype cs command! -nargs=1 -buffer SearchPackages :exe s:PackageSearch(<q-args>)
+autocmd filetype cs command! -buffer PackageCache :exe s:PackageCache()
+autocmd filetype cs command! -nargs=1 -complete=customlist,s:CompletePackage -buffer PackageInfo :exe s:PackageVersions(<q-args>, 's:PackageInfo')
