@@ -57,7 +57,7 @@ the package information will be displayed in a markdown buffer. This buffer has 
 ```
 ![package-info](http://i.imgur.com/wedleIm.gif)
 
-`:PackageInfo` shows a list of of versions for the package. After a version has been selected
+`:PackageInfo` shows a list of versions for the package. After a version has been selected
 the package information will be displayed in a markdown buffer. This buffer has `I` bound to install the package and `F` bound to follow dependencies.    
 
 ## Completion
